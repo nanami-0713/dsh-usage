@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 会话模块（host 侧）。
+ * @hsinsekai-nanami/dsh-usage — 会话模块（host 侧）。
  *
  * 归集单个会话的逐模型用量：定位并解压 session.jsonl.zstd，经 core/session-log
  * 统一解析后按「模型 × 小时」聚合，供实时费用徽标按「模型 × 时代 × 峰谷」计价。

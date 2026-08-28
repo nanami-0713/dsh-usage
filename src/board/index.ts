@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — board 模块的索引状态管理（host 侧）。
+ * @hsinsekai-nanami/dsh-usage — board 模块的索引状态管理（host 侧）。
  *
  * 把 loadCache / scanSessions 包成一个带 TTL 与单飞（single-flight）语义的
  * 状态机：路由处理函数只调 ensureIndex(force)，并发与节流都在这里消化。

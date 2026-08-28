@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 统一配置（host 侧，core 内核）。
+ * @hsinsekai-nanami/dsh-usage — 统一配置（host 侧，core 内核）。
  *
  * 配置文件：~/.dsh/plugins/dsh-usage/config.json（version 2），计价与额度共用：
  *   { version: 2, rateUsdCny, models: {…覆盖价…}, providers: {…适配器映射…}, refreshMs }

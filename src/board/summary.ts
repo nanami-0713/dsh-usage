@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 看板汇总构建（board 模块，host 侧，纯函数）。
+ * @hsinsekai-nanami/dsh-usage — 看板汇总构建（board 模块，host 侧，纯函数）。
  *
  * 输入：索引缓存（小时桶）+ 计价配置 + 时间范围；输出 SummaryResponse。
  * 费用逐「小时 × 模型」桶解析单价（时代 × 峰谷），再累加，保证每条 token

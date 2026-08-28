@@ -1,6 +1,6 @@
 import type { UserConfig } from 'tsdown'
 
-const PLUGIN_ID = '@dsh-external/dsh-usage'
+const PLUGIN_ID = '@hsinsekai-nanami/dsh-usage'
 
 /**
  * client 产物必须是 ModuleLoader.load 包起来的 CJS bundle。

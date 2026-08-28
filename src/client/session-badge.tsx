@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — client：实时费用徽标（对话头部左侧）。
+ * @hsinsekai-nanami/dsh-usage — client：实时费用徽标（对话头部左侧）。
  *
  * 常态只显示一行 `¥0.0123 / $0.0017`；悬停展开明细：当前选择模型及其单价、
  * 逐模型分段计费、总 Token、输入/缓存/输出拆分、上下文近似组成。

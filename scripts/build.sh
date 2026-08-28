@@ -1,5 +1,5 @@
 #!/bin/bash
-# @dsh-external/dsh-usage build.
+# @hsinsekai-nanami/dsh-usage build.
 # 无 monorepo 依赖：devDependencies 全部来自 npm，node_modules 缺失时自动安装。
 # 产物：lib/index.js（host, ESM）+ lib/client.js（三个 UI 面, ModuleLoader bundle）。
 set -euo pipefail

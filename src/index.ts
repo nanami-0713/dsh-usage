@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — host half（统一入口）。
+ * @hsinsekai-nanami/dsh-usage — host half（统一入口）。
  *
  * Token 消耗体系插件：一个 inject 挂载全部子模块路由（前缀 /api/dsh-usage/）：
  *   GET     /session?sessionId=<id>                      单会话逐模型归集（实时费用徽标）

@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 本机路径工具（host 侧，core 内核）。
+ * @hsinsekai-nanami/dsh-usage — 本机路径工具（host 侧，core 内核）。
  *
  * 统一三个前身插件（dsh-token-cost / dsh-usage-board / dsh-quota-visor）
  * 各自复制一份的 dshHomeDir / sessionsDir / pluginDataDir。

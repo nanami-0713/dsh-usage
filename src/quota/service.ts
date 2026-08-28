@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — quota 模块的额度查询服务（host 侧）。
+ * @hsinsekai-nanami/dsh-usage — quota 模块的额度查询服务（host 侧）。
  *
  * 职责：
  *   1. 解析 DSH provider 配置：~/.dsh/settings.yaml 的 llm-pi-ai.providers.<id>

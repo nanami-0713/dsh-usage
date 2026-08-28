@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — client half（统一入口）。
+ * @hsinsekai-nanami/dsh-usage — client half（统一入口）。
  *
  * 一个 effect 注册三个 UI 面，构成完整 Token 消耗体系：
  *   - conversation.session.header.actions    左徽标：实时费用（SessionBadge）

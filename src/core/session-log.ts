@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 会话日志统一解析（core 内核，纯函数，host 与 client 共用类型）。
+ * @hsinsekai-nanami/dsh-usage — 会话日志统一解析（core 内核，纯函数，host 与 client 共用类型）。
  *
  * 解析 `~/.dsh/sessions/<folder>/<sessionId>/session.jsonl.zstd` 解压后的文本：
  *   - `session`              → 会话元信息（id / cwd / createdAt / origin）

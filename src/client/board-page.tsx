@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — client：设置页「用量看板」。
+ * @hsinsekai-nanami/dsh-usage — client：设置页「用量看板」。
  *
  * 全局账单（历史）：时间筛选 / 汇总卡片 / 各模型花费折线图 / 模型与文件夹明细；
  * 订阅额度（余量）：当前 DSH 中配置的全部 Coding Plan 额度窗口进度条

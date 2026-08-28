@@ -1,4 +1,4 @@
-# @dsh-external/dsh-usage
+# @hsinsekai-nanami/dsh-usage
 
 DSH **Token 消耗体系**插件：把「正在花多少、一共花了多少、还剩多少」三件事装进一个插件。
 
@@ -87,7 +87,7 @@ DeepSeek 分时计价自北京时间 2026-08-17 00:00 起生效；高峰 = 每�
 ## 扩展 Coding Plan 适配器
 
 ```ts
-import { registerQuotaAdapter } from '@dsh-external/dsh-usage/lib/quota/service.js'
+import { registerQuotaAdapter } from '@hsinsekai-nanami/dsh-usage/lib/quota/service.js'
 
 registerQuotaAdapter('my-plan', async (apiKey, baseURL) => ({
   adapter: 'my-plan',

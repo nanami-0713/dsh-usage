@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 多帧 zstd 解码（host 侧，core 内核）。
+ * @hsinsekai-nanami/dsh-usage — 多帧 zstd 解码（host 侧，core 内核）。
  *
  * DSH 会话日志是逐批追加的 zstd 帧拼接，node:zlib 的一次性解码只认第一帧，
  * 因此需要按帧结构（RFC 8878）扫描完整帧边界后逐帧解码再拼接。

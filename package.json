@@ -1,5 +1,5 @@
 {
-  "name": "@dsh-external/dsh-usage",
+  "name": "@hsinsekai-nanami/dsh-usage",
   "version": "1.0.0",
   "description": "DSH Token 消耗体系插件：会话级实时费用徽标（逐请求模型×时代×峰谷计价）+ 全局用量看板（设置页）+ Coding Plan 订阅额度监控（GLM/Kimi，可扩展适配器）——实时、历史、余量三位一体",
   "private": false,

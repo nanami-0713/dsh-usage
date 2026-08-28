@@ -1,11 +1,11 @@
 /**
- * @dsh-external/dsh-usage — host / client 共享的纯类型与展示格式化。
+ * @hsinsekai-nanami/dsh-usage — host / client 共享的纯类型与展示格式化。
  *
  * 本文件不包含任何计价逻辑（计价在 host 侧 src/core/pricing.ts 完成），
  * client 只消费 host 序列化好的 SummaryResponse。
  */
 
-export const PLUGIN_ID = '@dsh-external/dsh-usage'
+export const PLUGIN_ID = '@hsinsekai-nanami/dsh-usage'
 
 /** 查询时间范围：近 1 天 / 近 7 天 / 近 30 天 / 全部。 */
 export type RangeKey = '1d' | '7d' | '30d' | 'all'

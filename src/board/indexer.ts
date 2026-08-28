@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 全局会话日志索引器（board 模块，host 侧）。
+ * @hsinsekai-nanami/dsh-usage — 全局会话日志索引器（board 模块，host 侧）。
  *
  * 扫描 ~/.dsh/sessions/<folder>/<session>/session.jsonl.zstd 的全部记录，
  * 经 core/session-log 统一解析后按「北京时区小时 × 模型」聚合成紧凑桶。

@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — client：Coding Plan 订阅额度徽标（对话头部右侧）。
+ * @hsinsekai-nanami/dsh-usage — client：Coding Plan 订阅额度徽标（对话头部右侧）。
  *
  * 当前 provider 未识别为 Coding Plan 时不渲染；常态：适配器名 + 5 小时额度
  * 迷你进度条 + 百分比 + 距重置倒计时；悬停展开全部额度窗口。

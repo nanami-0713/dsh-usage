@@ -1,4 +1,4 @@
-# @dsh-external/dsh-usage — DSH bundle patch.
+# @hsinsekai-nanami/dsh-usage — DSH bundle patch.
 # Host half: 统一 Token 消耗体系 API（前缀 /api/dsh-usage/）：
 #   GET     /api/dsh-usage/session?sessionId=<id>        单会话逐模型归集（实时费用徽标）
 #   GET     /api/dsh-usage/summary?range=1d|7d|30d|all   全局用量汇总（设置页看板）
@@ -10,4 +10,4 @@
 # Client half: 对话头部左徽标（实时费用）+ 右徽标（订阅额度）+ 设置页「用量看板」（含订阅额度区块）。
 - insert:
     - id: dsh-usage
-      name: '@dsh-external/dsh-usage'
+      name: '@hsinsekai-nanami/dsh-usage'

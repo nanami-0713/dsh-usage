@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 订阅额度共享模型（quota 模块，纯函数，host 与 client 共用）。
+ * @hsinsekai-nanami/dsh-usage — 订阅额度共享模型（quota 模块，纯函数，host 与 client 共用）。
  *
  * 不同厂商的 Coding Plan 订阅额度结构并不相同（这正是不能一套逻辑走天下的原因）：
  *   - GLM Coding Plan（z.ai / bigmodel）：5 小时 credits/tokens 窗口 + 周窗口，

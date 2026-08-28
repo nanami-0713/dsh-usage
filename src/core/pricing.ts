@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-usage — 统一计价内核（core，纯函数，host 与 client 共用）。
+ * @hsinsekai-nanami/dsh-usage — 统一计价内核（core，纯函数，host 与 client 共用）。
  *
  * 费用不是「所有 token 一口价」，而是把每一条 usage 记录归到
  * 「模型 × 时代 × 峰谷」的具体单价上逐条计费：
@@ -22,7 +22,7 @@
 
 /* ───────────────────────── 统一配置（v2） ───────────────────────── */
 
-export const PLUGIN_ID = '@dsh-external/dsh-usage'
+export const PLUGIN_ID = '@hsinsekai-nanami/dsh-usage'
 
 /** host 挂在 DSH webserver 上的同源 API 前缀。 */
 export const API_BASE = '/api/dsh-usage'
