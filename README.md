@@ -1,5 +1,8 @@
 # @hsinsekai-nanami/dsh-usage
 
+[![npm version](https://img.shields.io/npm/v/@hsinsekai-nanami/dsh-usage)](https://www.npmjs.com/package/@hsinsekai-nanami/dsh-usage)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 DSH **Token 消耗体系**插件：把「正在花多少、一共花了多少、还剩多少」三件事装进一个插件。
 
 - **实时（左徽标）**：对话头部左侧显示当前会话累计 Token 与费用，按**每条请求实际使用的模型 × 涨价时代 × 峰谷时段**逐桶计价，悬停看逐模型明细与上下文组成；
@@ -11,16 +14,28 @@ DSH **Token 消耗体系**插件：把「正在花多少、一共花了多少、
 
 ## 安装
 
-```bash
-# 方式一：Release tgz 装进 profile（推荐）
-# 下载 dsh-usage-<version>.tgz 后按 DSH 插件常规流程安装
+已发布 npm，一条命令装完（推荐）：
 
-# 方式二：源码构建
+```bash
+dsh plugin --profile web add @hsinsekai-nanami/dsh-usage@1.0.1
+dsh web   # 启动或重启后生效
+```
+
+其他方式：
+
+```bash
+# GitHub Release tgz：下载 https://github.com/nanami-0713/dsh-usage/releases 的
+# hsinsekai-nanami-dsh-usage-<version>.tgz 后
+dsh plugin --profile web add ./hsinsekai-nanami-dsh-usage-<version>.tgz
+
+# 源码构建（开发者）
 git clone https://github.com/nanami-0713/dsh-usage.git
 cd dsh-usage
 npm install && npm run build:all
 # 然后用 super-injector 注入，或按 cordis.patch.yml 做 bundle 装配
 ```
+
+> 版本号建议精确指定（如 `@1.0.1`）而非 `@latest`：pnpm 11 会暂扣 24 小时内发布的版本，`@latest` 可能解析到旧版。
 
 ## 从三个旧插件迁移（重要）
 
