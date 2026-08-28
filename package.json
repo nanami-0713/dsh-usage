@@ -90,5 +90,8 @@
   "bugs": {
     "url": "https://github.com/nanami-0713/dsh-usage/issues"
   },
-  "homepage": "https://github.com/nanami-0713/dsh-usage#readme"
+  "homepage": "https://github.com/nanami-0713/dsh-usage#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
