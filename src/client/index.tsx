@@ -8,7 +8,8 @@
  */
 import type { ConnectionHandle, SessionId } from '@deepseek-ai/dsh-client-connection/client'
 import { PLUGIN_ID } from '../core/pricing'
-import { BOARD_CSS, UsageBoardSection } from './board-page'
+import { BOARD_CSS } from './board-widgets'
+import { UsageBoardSection } from './board-page'
 import { QuotaBadge, QUOTA_BADGE_CSS, createFetchQuota, type ModelSelectionInfo } from './quota-badge'
 import { createFetchUsage, SessionBadge, SESSION_BADGE_CSS, type DirectoryStore } from './session-badge'
 import { DEFAULT_REFRESH_MS } from '../quota/shared'
@@ -35,6 +36,16 @@ export function apply(ctx: ClientContext): void {
   const fetchQuota = createFetchQuota()
 
   const getSelection = async (sessionId: string): Promise<ModelSelectionInfo | undefined> => {
+    // dsh 0.1.2 移除了 session/models RPC：改为优先读会话共享模型目录的当前
+    // 选择（与 SessionBadge/composer 选择器同源，目录未加载时触发一次 load）。
+    try {
+      const directory = ctx.modelDirectories.directoryFor(sessionId)
+      const current = directory.store.getSnapshot().current
+      if (current) return { provider: current.provider, model: current.model }
+      void directory.load().catch(() => undefined)
+    } catch {
+      // 目录服务不可用：退回旧 RPC（0.1.1 及更早的宿主）。
+    }
     try {
       const response = await ctx.connection.api.sessions.models({ sessionId: sessionId as SessionId })
       if (!response.result.ok) return undefined

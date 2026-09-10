@@ -85,12 +85,14 @@ export function createFetchQuota(): QuotaBadgeProps['fetchQuota'] {
   }
 }
 
-/** 快照回退：最近一条 assistant 消息记录的 provider/model。 */
+/** 快照回退：最近一条 assistant 消息记录的 provider/model。
+ * 0.1.2 的会话快照不再保证 chat.legacy 形状，路径全部走防御式访问，
+ * 拿不到就返回 undefined（主路径是目录 store 的 getSelection）。 */
 function latestSelection(snapshot: ConversationSnapshot): ModelSelectionInfo | undefined {
-  const nodes = snapshot.chat.legacy.nodes
+  const nodes = (snapshot as { chat?: { legacy?: { nodes?: unknown[] } } })?.chat?.legacy?.nodes ?? []
   for (let i = nodes.length - 1; i >= 0; i -= 1) {
-    const node = nodes[i]
-    if (node.kind !== 'assistant') continue
+    const node = nodes[i] as { kind?: string; requestConfig?: { model?: string; provider?: string }; provenance?: { model?: string; provider?: string } }
+    if (node?.kind !== 'assistant') continue
     const model = node.requestConfig?.model ?? node.provenance?.model
     if (model) {
       const provider = node.requestConfig?.provider ?? node.provenance?.provider
@@ -132,7 +134,9 @@ export function QuotaBadge(props: QuotaBadgeProps): JSX.Element | null {
   const [loading, setLoading] = useState(false)
   const [tick, setTick] = useState(0)
   const requestSeq = useRef(0)
-  const fallbackSelection = props.useSession((snapshot) => latestSelection(snapshot))
+  // 0.1.2 的槽位 props 不保证注入 useSession：缺省时跳过快照回退，
+  // 主路径（目录 store 的 getSelection 轮询）不受影响。
+  const fallbackSelection = props.useSession?.((snapshot) => latestSelection(snapshot))
 
   const current = selection ?? (fallbackSelection !== undefined && fallbackSelection.provider !== '' ? fallbackSelection : undefined)
   const provider = current?.provider
