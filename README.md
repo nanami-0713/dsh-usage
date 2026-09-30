@@ -74,7 +74,7 @@ npm install && npm run build:all
 - `providers`：Coding Plan 适配器映射（`zai` / `kimi` / `none`）；官方内置 provider 与 baseURL 特征可自动识别，多数情况无需配置；
 - API key 全程留在 host 侧（进程环境变量 → `~/.dsh/.credentials.yaml`），浏览器只经同源 API 取数。
 
-## 内置计价目录（截至 2026-08 官方公开刊例）
+## 内置计价目录（截至 2026-09 官方公开刊例）
 
 | 模型 | 时代 | 单价（每百万 tokens） |
 |---|---|---|
@@ -83,10 +83,14 @@ npm install && npm run build:all
 | DeepSeek V4 Pro | 涨价前 | 输入 ¥3.0 · 缓存 ¥0.025 · 输出 ¥6.0 |
 | DeepSeek V4 Pro | 空闲 / 高峰 | 输入 ¥4.5/¥9.0 · 缓存 ¥0.15/¥0.30 · 输出 ¥13.5/¥27.0 |
 | Kimi K3（含 k3 等别名） | 不分时 | 输入 $3.0 · 缓存 $0.30 · 输出 $15.0 |
-| GLM-5.3 | 不分时（**估算**，按 5.2 刊例） | 输入 ¥8 · 缓存 ¥2 · 输出 ¥28 |
+| GLM-5.3 | 不分时 | 输入 ¥8 · 缓存 ¥2 · 输出 ¥28 |
+| GLM-5.3-Flash | 不分时 | 输入 ¥0.8 · 缓存 ¥0.23 · 输出 ¥2.8 |
+| GLM-5.3-FlashX | 不分时 | 输入 ¥2 · 缓存 ¥0.57 · 输出 ¥7 |
 | GLM-5.2 | 不分时 | 输入 ¥8 · 缓存 ¥2 · 输出 ¥28 |
 
 DeepSeek 分时计价自北京时间 2026-08-17 00:00 起生效；高峰 = 每日 9:00-12:00、14:00-18:00（Asia/Shanghai）。
+GLM-5.3 官方刊例已公布（此前的 5.2 同价估算恰好一致）；5.3-Flash / 5.3-FlashX 为官方轻量档
+（[API 定价](https://docs.bigmodel.cn/cn/guide/start/pricing)），缓存存储当前限时免费，插件暂按输入价计缓存写入。
 
 ## Host API（前缀 `/api/dsh-usage/`）
 

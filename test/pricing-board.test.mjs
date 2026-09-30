@@ -53,7 +53,7 @@ test('DeepSeek 峰谷时段（北京 9-12、14-18 为高峰）', () => {
   assert.equal(proOff.entry.outputPerMillion, 13.5)
 })
 
-test('Kimi K3 官方美元刊例 / GLM-5.3 同基座估算', () => {
+test('Kimi K3 官方美元刊例 / GLM-5.3 官方刊例与轻量档', () => {
   const kimi = resolvePrice('kimi-k3', at('2026-08-18T10:00:00+08:00'))
   assert.equal(kimi.entry.currency, 'USD')
   assert.equal(kimi.entry.inputPerMillion, 3.0)
@@ -66,7 +66,14 @@ test('Kimi K3 官方美元刊例 / GLM-5.3 同基座估算', () => {
   assert.equal(glm.entry.inputPerMillion, 8)
   assert.equal(glm.entry.cacheReadPerMillion, 2)
   assert.equal(glm.entry.outputPerMillion, 28)
-  assert.equal(glm.entry.estimated, true)
+  assert.equal(glm.entry.estimated, false)
+
+  const flash = resolvePrice('glm-5.3-flash', at('2026-09-30T10:00:00+08:00'))
+  assert.equal(flash.entry.currency, 'CNY')
+  assert.equal(flash.entry.inputPerMillion, 0.8)
+  assert.equal(flash.entry.cacheReadPerMillion, 0.23)
+  assert.equal(flash.entry.outputPerMillion, 2.8)
+  assert.equal(flash.entry.estimated, false)
 })
 
 test('Kimi K3 裸名别名 k3（Coding Plan 渠道日志名）命中同一规则', () => {

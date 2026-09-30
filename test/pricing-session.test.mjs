@@ -33,6 +33,8 @@ test('matchRuleKey：精确 → 别名 → 前缀', () => {
   assert.equal(matchRuleKey('k3-256k'), 'kimi-k3')
   assert.equal(matchRuleKey('kimi-k3'), 'kimi-k3')
   assert.equal(matchRuleKey('glm-5.3'), 'glm-5.3')
+  assert.equal(matchRuleKey('glm-5.3-flash'), 'glm-5.3-flash')
+  assert.equal(matchRuleKey('glm-5.3-flashx'), 'glm-5.3-flashx')
   assert.equal(matchRuleKey('deepseek-v4-pro-0813'), 'deepseek-v4-pro')
   assert.equal(matchRuleKey('totally-unknown'), null)
   assert.equal(matchRuleKey(undefined), null)
@@ -76,7 +78,19 @@ test('resolvePrice：Kimi 美元刊例与 GLM 估算价', () => {
   assert.equal(glm?.entry.currency, 'CNY')
   assert.equal(glm?.entry.inputPerMillion, 8)
   assert.equal(glm?.entry.outputPerMillion, 28)
-  assert.equal(glm?.entry.estimated, true)
+  assert.equal(glm?.entry.estimated, false)
+
+  const glmFlash = resolvePrice('glm-5.3-flash', T_PEAK)
+  assert.equal(glmFlash?.label, 'GLM-5.3-Flash')
+  assert.equal(glmFlash?.entry.inputPerMillion, 0.8)
+  assert.equal(glmFlash?.entry.cacheReadPerMillion, 0.23)
+  assert.equal(glmFlash?.entry.outputPerMillion, 2.8)
+  assert.equal(glmFlash?.entry.estimated, false)
+
+  const glmFlashX = resolvePrice('glm-5.3-flashx', T_PEAK)
+  assert.equal(glmFlashX?.entry.inputPerMillion, 2)
+  assert.equal(glmFlashX?.entry.cacheReadPerMillion, 0.57)
+  assert.equal(glmFlashX?.entry.outputPerMillion, 7)
 
   assert.equal(resolvePrice('no-such-model', T_PEAK), null)
 })
@@ -123,7 +137,8 @@ test('priceSessionUsage：多模型分段计费 + 未收录模型只计量不计
   assert.equal(summary.lines.length, 3)
   assert.equal(Math.round(summary.totalCny * 100) / 100, 56) // 12 + 6 + 38
   assert.equal(summary.unmatchedTokens, 200)
-  assert.equal(summary.hasEstimated, true)
+  // 目录已全为官方刊例（GLM-5.3 估算标记已转正），estimated 仅供未来估算条目复用
+  assert.equal(summary.hasEstimated, false)
 
   const flash = summary.lines.find((l) => l.model === 'deepseek-v4-flash')
   assert.ok(flash)

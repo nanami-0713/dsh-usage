@@ -9,8 +9,8 @@
  * - Kimi K3（Moonshot 官方刊例，美元，不分时）：
  *     Coding Plan 渠道（kimi-code / kimi-coding）在日志里记裸名 "k3"，
  *     官方 API 渠道记 "kimi-k3"，均通过别名/前缀命中同一条规则。
- * - GLM-5.3（官方 API 刊例未公布）：按同基座 GLM-5.2 的 bigmodel.cn 刊例价
- *     估算，UI 标注「估算」，可在 config.json 用官方价覆盖。
+ * - GLM-5.3 系列（bigmodel.cn 官方刊例，不分时）：5.3 = ¥8/¥2/¥28；同基座轻量版
+ *     5.3-Flash 约为其 1/10（¥0.8/¥0.23/¥2.8），5.3-FlashX = ¥2/¥0.57/¥7。
  *
  * 缓存写入 tokens 没有独立刊例价（DeepSeek/智谱均按未缓存输入计费），按输入单价计费。
  * USD ⇄ CNY 按可配置汇率（默认 7.2）折算，不联网请求实时汇率。
@@ -118,7 +118,7 @@ function deepseekEras(
   ]
 }
 
-/** 内置计价目录（截至 2026-08 官方公开刊例；取两个前身插件目录的并集）。 */
+/** 内置计价目录（截至 2026-09 官方公开刊例；取两个前身插件目录的并集）。 */
 export const MODEL_RULES: ModelRule[] = [
   {
     key: 'deepseek-v4-flash',
@@ -157,17 +157,43 @@ export const MODEL_RULES: ModelRule[] = [
     note: '按官方美元刊例计费，人民币金额按汇率折算',
   },
   {
+    key: 'glm-5.3-flash',
+    label: 'GLM-5.3-Flash',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'CNY', inputPerMillion: 0.8, cacheReadPerMillion: 0.23, outputPerMillion: 2.8, sinceMs: null, peak: null,
+        source: 'bigmodel.cn 官方刊例（GLM-5.3-Flash：输入 ¥0.8 / 缓存命中 ¥0.23 / 输出 ¥2.8）',
+        estimated: false,
+      },
+    ],
+    note: 'GLM-5.3 同基座轻量版，刊例约 5.3 的 1/10；目录顺序须在 glm-5.3 之前（前缀匹配先到先得）',
+  },
+  {
+    key: 'glm-5.3-flashx',
+    label: 'GLM-5.3-FlashX',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'CNY', inputPerMillion: 2, cacheReadPerMillion: 0.57, outputPerMillion: 7, sinceMs: null, peak: null,
+        source: 'bigmodel.cn 官方刊例（GLM-5.3-FlashX：输入 ¥2 / 缓存命中 ¥0.57 / 输出 ¥7）',
+        estimated: false,
+      },
+    ],
+    note: null,
+  },
+  {
     key: 'glm-5.3',
     label: 'GLM-5.3',
     peakHours: null,
     eras: [
       {
         currency: 'CNY', inputPerMillion: 8, cacheReadPerMillion: 2, outputPerMillion: 28, sinceMs: null, peak: null,
-        source: '按同基座 GLM-5.2 的 bigmodel.cn 刊例价估算（GLM-5.3 官方 API 刊例未公布）',
-        estimated: true,
+        source: 'bigmodel.cn 官方刊例（GLM-5.3：输入 ¥8 / 缓存命中 ¥2 / 输出 ¥28）',
+        estimated: false,
       },
     ],
-    note: '估算价：GLM-5.3 与 GLM-5.2 同为 743B 基座；官方公布后可在 config.json 覆盖',
+    note: null,
   },
   {
     key: 'glm-5.2',

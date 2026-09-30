@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.2（2026-09-30）
+
+### 修复
+
+- 计价目录补入 GLM-5.3-Flash / GLM-5.3-FlashX 官方刊例（[#1](https://github.com/nanami-0713/dsh-usage/issues/1)）：
+  此前 `glm-5.3-flash` 靠 `glm-5.3-` 前缀匹配落进 GLM-5.3 估算价（¥8/¥2/¥28），现按
+  bigmodel.cn 官方刊例独立命中——Flash 输入 ¥0.8 / 缓存命中 ¥0.23 / 输出 ¥2.8（约 5.3 的 1/10）、
+  FlashX ¥2/¥0.57/¥7；两者须排在 glm-5.3 之前以免前缀匹配抢占。
+- GLM-5.3 官方 API 刊例已公布（输入 ¥8 / 缓存命中 ¥2 / 输出 ¥28），移除「估算」标记，
+  与原按 GLM-5.2 刊例的估算值恰好一致，历史折算金额不受影响。
+
 ## v1.0.0（2026-08-28）
 
 `dsh-token-cost` + `dsh-usage-board` + `dsh-quota-visor` 三插件合并的首个版本。
