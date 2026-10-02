@@ -237,6 +237,39 @@ test('未知模型返回 null；带日期后缀的模型按前缀匹配', () => 
   assert.equal(suffixed.entry.inputPerMillion, 9.0)
 })
 
+test('DeepSeek V4.1 Flash（deepseek-flash）：峰时仅工作日、不含法定节假日', () => {
+  const at10 = (iso) => resolvePrice('deepseek-flash', at(iso))
+  // 工作日峰时段 → 峰价（2026-10-08 周四 10:00）。
+  const peak = at10('2026-10-08T10:00:00+08:00')
+  assert.equal(peak.ruleKey, 'deepseek-flash')
+  assert.equal(peak.entry.peak, true)
+  assert.equal(peak.entry.inputPerMillion, 2)
+  assert.equal(peak.entry.cacheReadPerMillion, 0.04)
+  assert.equal(peak.entry.outputPerMillion, 8)
+  // 国庆法定节假日（2026-10-01 周四）同一时段 → 谷价。
+  const holiday = at10('2026-10-01T10:00:00+08:00')
+  assert.equal(holiday.entry.peak, false)
+  assert.equal(holiday.entry.inputPerMillion, 1)
+  // 周末（2026-10-03 周六）峰时段 → 谷价；工作日晚间（2026-10-08 周四 20:00）→ 谷价。
+  assert.equal(at10('2026-10-03T10:00:00+08:00').entry.peak, false)
+  assert.equal(at10('2026-10-08T20:00:00+08:00').entry.peak, false)
+  // 中秋（2026-09-25 周五）峰时段 → 谷价。
+  assert.equal(at10('2026-09-25T10:00:00+08:00').entry.peak, false)
+  // 调休上班的周六（2026-10-10）→ 按官方「周一至五」字面口径仍谷时。
+  assert.equal(at10('2026-10-10T10:00:00+08:00').entry.peak, false)
+  // 谷价数值：输入 ¥1 / 缓存 ¥0.02 / 输出 ¥4。
+  const offpeak = at10('2026-10-03T10:00:00+08:00')
+  assert.equal(offpeak.entry.inputPerMillion, 1)
+  assert.equal(offpeak.entry.cacheReadPerMillion, 0.02)
+  assert.equal(offpeak.entry.outputPerMillion, 4)
+})
+
+test('V4 系峰谷不受工作日/节假日口径影响（每日峰谷，回归保护）', () => {
+  // 节假日（2026-10-01 周四）与周日（2026-09-20）的峰时段，V4 Flash 仍为峰价。
+  assert.equal(resolvePrice('deepseek-v4-flash', at('2026-10-01T10:00:00+08:00')).entry.peak, true)
+  assert.equal(resolvePrice('deepseek-v4-flash', at('2026-09-20T10:00:00+08:00')).entry.peak, true)
+})
+
 test('用户覆盖优先于内置目录', () => {
   const config = {
     version: 1,

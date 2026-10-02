@@ -104,6 +104,13 @@ export interface ModelRule {
   aliases?: string[]
   /** 非空 = 分时模型（按北京时区小时命中 peak/非 peak 条目）。 */
   peakHours: [number, number][] | null
+  /**
+   * 峰时仅限的星期（北京时区，0=周日…6=周六）；undefined = 每日。
+   * DeepSeek V4.1 Flash 的官方口径为「周一至五（不含法定节假日）」。
+   */
+  peakWeekdays?: number[]
+  /** 法定节假日（北京时区 'YYYY-MM-DD'）峰时排除表；undefined = 无排除。 */
+  peakHolidayDates?: readonly string[]
   /** 按 sinceMs 升序；解析时取「sinceMs ≤ ts 的最后一条」，再按峰谷二选一。 */
   eras: PriceEntry[]
   note: string | null
@@ -116,6 +123,30 @@ export const DEEPSEEK_TIME_OF_USE_SINCE_MS = Date.parse('2026-08-17T00:00:00+08:
 export const DEEPSEEK_PEAK_HOURS: [number, number][] = [
   [9, 12],
   [14, 18],
+]
+
+/**
+ * 2026 年中国法定节假日（北京时区日期，国务院办公厅 2025-11 发布）。
+ * 供「峰时仅工作日（不含法定节假日）」口径的模型（DeepSeek V4.1 Flash）排除用；
+ * 调休上班的周六/周日按官方「周一至五」字面口径仍不算峰时。
+ * 2027 年安排公布后需更新。
+ */
+export const CHINA_HOLIDAYS_2026: readonly string[] = [
+  // 元旦 1/1-1/3
+  '2026-01-01', '2026-01-02', '2026-01-03',
+  // 春节 2/15-2/23
+  '2026-02-15', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19',
+  '2026-02-20', '2026-02-21', '2026-02-22', '2026-02-23',
+  // 清明 4/4-4/6
+  '2026-04-04', '2026-04-05', '2026-04-06',
+  // 劳动节 5/1-5/5
+  '2026-05-01', '2026-05-02', '2026-05-03', '2026-05-04', '2026-05-05',
+  // 端午 6/19-6/21
+  '2026-06-19', '2026-06-20', '2026-06-21',
+  // 中秋 9/25-9/27
+  '2026-09-25', '2026-09-26', '2026-09-27',
+  // 国庆 10/1-10/7
+  '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07',
 ]
 
 function deepseekEras(
@@ -153,6 +184,29 @@ export const MODEL_RULES: ModelRule[] = [
       { currency: 'CNY', inputPerMillion: 9.0, cacheReadPerMillion: 0.3, outputPerMillion: 27.0, source: 'DeepSeek 官方（2026-08-17 起高峰时段）', estimated: false },
     ),
     note: '高峰 = 北京时间 9-12 点、14-18 点；涨价前为不分时统一价',
+  },
+  {
+    // DeepSeek V4.1 Flash：官方桌面端（DeepSeek Harness）账户渠道与 API 渠道均记裸名
+    // "deepseek-flash"（官方模型目录 id）。峰谷机制自 2026-09-10 12 时起，与 V4 系不同：
+    // 峰时仅周一至五（不含法定节假日），晚间/周末/节假日全天谷时。
+    key: 'deepseek-flash',
+    label: 'DeepSeek V4.1 Flash',
+    peakHours: DEEPSEEK_PEAK_HOURS,
+    peakWeekdays: [1, 2, 3, 4, 5],
+    peakHolidayDates: CHINA_HOLIDAYS_2026,
+    eras: [
+      {
+        currency: 'CNY', inputPerMillion: 1, cacheReadPerMillion: 0.02, outputPerMillion: 4, sinceMs: null, peak: false,
+        source: 'DeepSeek 官方刊例（V4.1 Flash 谷时：输入 ¥1 / 缓存命中 ¥0.02 / 输出 ¥4）',
+        estimated: false,
+      },
+      {
+        currency: 'CNY', inputPerMillion: 2, cacheReadPerMillion: 0.04, outputPerMillion: 8, sinceMs: null, peak: true,
+        source: 'DeepSeek 官方刊例（V4.1 Flash 峰时：输入 ¥2 / 缓存命中 ¥0.04 / 输出 ¥8）',
+        estimated: false,
+      },
+    ],
+    note: '峰时仅工作日 9-12、14-18（不含法定节假日，内置 2026 年国务院假日表；调休上班的周末按官方「周一至五」口径仍算谷时），其余全谷时',
   },
   {
     key: 'kimi-k3',
@@ -418,6 +472,7 @@ export const MODEL_RULES: ModelRule[] = [
 export const CODING_PLAN_PROVIDER_HINTS: { match: (provider: string) => boolean; label: string }[] = [
   { match: (p) => p === 'zai-coding-cn' || p.includes('zai-coding') || p === 'zai', label: 'GLM Coding Plan' },
   { match: (p) => p === 'moonshotai-cn' || p.includes('kimi-coding') || p.includes('moonshot-coding'), label: 'Kimi Coding Plan' },
+  { match: (p) => p === 'deepseek-account' || p.includes('deepseek-account'), label: 'DeepSeek 账户（官方桌面端）' },
 ]
 
 /* ───────────────────────── 北京时区工具 ───────────────────────── */
@@ -465,6 +520,22 @@ export function dayKeyOf(tsMs: number): string {
 /** 北京时区的小时数（0-23）。 */
 export function beijingHourOf(tsMs: number): number {
   return Number(beijingParts(tsMs).hour)
+}
+
+/** 北京时区的星期（0=周日…6=周六）。 */
+export function beijingWeekdayOf(tsMs: number): number {
+  const p = beijingParts(tsMs)
+  return new Date(Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day))).getUTCDay()
+}
+
+/** 命中分时模型的峰时（小时区间 ∧ 限定的星期 ∧ 非节假日排除表）。 */
+export function isRulePeak(rule: ModelRule, tsMs: number): boolean {
+  if (rule.peakHours === null) return false
+  const hour = beijingHourOf(tsMs)
+  if (!rule.peakHours.some(([from, to]) => hour >= from && hour < to)) return false
+  if (rule.peakWeekdays !== undefined && !rule.peakWeekdays.includes(beijingWeekdayOf(tsMs))) return false
+  if (rule.peakHolidayDates !== undefined && rule.peakHolidayDates.includes(dayKeyOf(tsMs))) return false
+  return true
 }
 
 /** 官方高峰时段：每日 9:00-12:00、14:00-18:00（Asia/Shanghai）。 */
@@ -547,8 +618,7 @@ export function resolvePrice(
   let entry = era
   const hasTimeOfUse = rule.eras.some((e) => e.sinceMs === era?.sinceMs && e.peak === true)
   if (hasTimeOfUse && rule.peakHours !== null) {
-    const hour = beijingHourOf(tsMs)
-    const peak = rule.peakHours.some(([from, to]) => hour >= from && hour < to)
+    const peak = isRulePeak(rule, tsMs)
     const matched = rule.eras.find((e) => e.sinceMs === era?.sinceMs && e.peak === peak)
     if (matched !== undefined) entry = matched
   }

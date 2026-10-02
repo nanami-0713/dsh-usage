@@ -82,6 +82,7 @@ npm install && npm run build:all
 | DeepSeek V4 Flash | 空闲 / 高峰 | 输入 ¥1.5/¥3.0 · 缓存 ¥0.05/¥0.10 · 输出 ¥4.5/¥9.0 |
 | DeepSeek V4 Pro | 涨价前 | 输入 ¥3.0 · 缓存 ¥0.025 · 输出 ¥6.0 |
 | DeepSeek V4 Pro | 空闲 / 高峰 | 输入 ¥4.5/¥9.0 · 缓存 ¥0.15/¥0.30 · 输出 ¥13.5/¥27.0 |
+| DeepSeek V4.1 Flash（官方桌面端记 deepseek-flash） | 谷时 / 峰时 | 输入 ¥1/¥2 · 缓存 ¥0.02/¥0.04 · 输出 ¥4/¥8 |
 | Kimi K3（含 k3 等别名） | 不分时 | 输入 $3.0 · 缓存 $0.30 · 输出 $15.0 |
 | GLM-5.3 | 不分时 | 输入 ¥8 · 缓存 ¥2 · 输出 ¥28 |
 | GLM-5.3-Flash | 不分时 | 输入 ¥0.8 · 缓存 ¥0.23 · 输出 ¥2.8 |
@@ -103,6 +104,10 @@ npm install && npm run build:all
 | MiMo V2.6 Pro UltraSpeed | 不分时 | 输入 ¥30 · 缓存 ¥0.25 · 输出 ¥60 |
 
 DeepSeek 分时计价自北京时间 2026-08-17 00:00 起生效；高峰 = 每日 9:00-12:00、14:00-18:00（Asia/Shanghai）。
+V4.1 Flash（峰谷机制 2026-09-10 12 时起）口径不同：**峰时仅周一至五（不含法定节假日）**，晚间/周末/节假日
+全天谷时——插件内置 2026 年国务院假日表（2027 年安排公布后需更新），调休上班的周末按官方「周一至五」字面
+口径仍算谷时。官方桌面端（DeepSeek Harness）的账户渠道 `deepseek-account` 与 API 渠道在日志中均记
+`deepseek-flash`，命中同一条规则（订阅渠道费用为刊例价折算，仅供参考）。
 GLM-5.3 官方刊例已公布（此前的 5.2 同价估算恰好一致）；5.3-Flash / 5.3-FlashX 为官方轻量档
 （[API 定价](https://docs.bigmodel.cn/cn/guide/start/pricing)），缓存存储当前限时免费，插件暂按输入价计缓存写入。
 OpenAI 刊例见 [developers.openai.com](https://developers.openai.com/api/docs/pricing)：GPT-6 系缓存写为 1.25× 输入
@@ -144,7 +149,7 @@ UI 只认统一的 `QuotaSnapshot` 模型（primary 窗口 + 任意附加窗口�
 ```bash
 npm run build:all   # host tsc + client tsdown（依赖全部来自 npm）
 npm run typecheck   # host + client 双端
-npm test            # node:test 52 例（计价/索引/汇总/zstd/会话归集/配置迁移/quota）
+npm test            # node:test 54 例（计价/索引/汇总/zstd/会话归集/配置迁移/quota）
 ```
 
 ## 架构
