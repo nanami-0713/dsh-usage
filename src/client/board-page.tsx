@@ -523,7 +523,7 @@ function ModelTable(props: {
                                 <span className="dub-rule-req">{rule.requests.toLocaleString()} 次调用命中</span>
                               </div>
                               <div className="dub-rule-prices">
-                                输入 {rule.currency === 'CNY' ? '¥' : '$'}{rule.inputPerMillion}/M · 缓存读 {rule.currency === 'CNY' ? '¥' : '$'}{rule.cacheReadPerMillion}/M · 输出 {rule.currency === 'CNY' ? '¥' : '$'}{rule.outputPerMillion}/M
+                                输入 {rule.currency === 'CNY' ? '¥' : '$'}{rule.inputPerMillion}/M · 缓存读 {rule.currency === 'CNY' ? '¥' : '$'}{rule.cacheReadPerMillion}/M{rule.cacheWritePerMillion !== undefined && rule.cacheWritePerMillion !== rule.inputPerMillion ? ` · 缓存写 ${rule.currency === 'CNY' ? '¥' : '$'}${rule.cacheWritePerMillion}/M` : ''} · 输出 {rule.currency === 'CNY' ? '¥' : '$'}{rule.outputPerMillion}/M
                                 {rule.since !== null ? ` · 生效于 ${new Date(rule.since).toLocaleString()}` : ''}
                               </div>
                               <div className="dub-rule-source">{rule.source}</div>

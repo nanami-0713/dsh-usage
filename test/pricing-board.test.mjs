@@ -91,6 +91,143 @@ test('Kimi K3 裸名别名 k3（Coding Plan 渠道日志名）命中同一规则
   assert.equal(matchRuleKey('gpt-5'), null)
 })
 
+test('OpenAI GPT-6 系官方刊例 + 缓存写独立价（1.25× 输入）', () => {
+  const astra = resolvePrice('gpt-6-astra', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(astra.entry.currency, 'USD')
+  assert.equal(astra.entry.inputPerMillion, 10)
+  assert.equal(astra.entry.cacheReadPerMillion, 1)
+  assert.equal(astra.entry.cacheWritePerMillion, 12.5)
+  assert.equal(astra.entry.outputPerMillion, 50)
+  // 1M in + 1M cacheWrite：10 + 12.5 = 22.5（若按输入价会低估为 20）。
+  const cost = costOf({ input: 1_000_000, cacheRead: 0, cacheWrite: 1_000_000, output: 0 }, astra, 7.2)
+  assert.ok(Math.abs(cost.usd - 22.5) < 1e-9)
+
+  const sol = resolvePrice('gpt-6.1-sol', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(sol.entry.inputPerMillion, 2)
+  assert.equal(sol.entry.cacheReadPerMillion, 0.1)
+  assert.equal(sol.entry.cacheWritePerMillion, 2.5)
+  assert.equal(sol.entry.outputPerMillion, 10)
+
+  const luna = resolvePrice('gpt-6-luna', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(luna.entry.inputPerMillion, 0.1)
+  assert.equal(luna.entry.cacheWritePerMillion, 0.125)
+  assert.equal(luna.entry.outputPerMillion, 0.5)
+})
+
+test('OpenAI Codex / 上一代 gpt-5.2 / chat-latest', () => {
+  assert.equal(matchRuleKey('gpt-5.3-codex'), 'gpt-5.3-codex')
+  const codex = resolvePrice('gpt-5.3-codex', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(codex.entry.inputPerMillion, 1.75)
+  assert.equal(codex.entry.cacheReadPerMillion, 0.175)
+  assert.equal(codex.entry.outputPerMillion, 14)
+  assert.equal(codex.entry.cacheWritePerMillion, undefined) // 无独立价 → 按输入价
+  const codexCost = costOf({ input: 0, cacheRead: 0, cacheWrite: 1_000_000, output: 0 }, codex, 7.2)
+  assert.ok(Math.abs(codexCost.usd - 1.75) < 1e-9)
+
+  assert.equal(matchRuleKey('gpt-5.2'), 'gpt-5.2')
+  assert.equal(matchRuleKey('gpt-5.2-codex'), 'gpt-5.2') // 别名
+  assert.equal(matchRuleKey('gpt-5.2-codex-max'), 'gpt-5.2') // 别名前缀
+  const old = resolvePrice('gpt-5.2', at('2026-06-01T10:00:00+08:00'))
+  assert.equal(old.entry.inputPerMillion, 1.75)
+  assert.equal(old.entry.outputPerMillion, 14)
+
+  const latest = resolvePrice('chat-latest', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(latest.entry.inputPerMillion, 5)
+  assert.equal(latest.entry.outputPerMillion, 30)
+})
+
+test('Anthropic Claude 系官方刊例 + 目录顺序（opus-5-5 先于 opus-5）', () => {
+  const fable = resolvePrice('claude-fable-5', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(fable.entry.inputPerMillion, 10)
+  assert.equal(fable.entry.cacheReadPerMillion, 1)
+  assert.equal(fable.entry.cacheWritePerMillion, 12.5)
+  assert.equal(fable.entry.outputPerMillion, 50)
+
+  // Opus 5.5：缓存读 5%（$0.20），不能被 opus-5 前缀抢占。
+  assert.equal(matchRuleKey('claude-opus-5-5'), 'claude-opus-5-5')
+  assert.equal(matchRuleKey('claude-opus-5-5-20260210'), 'claude-opus-5-5')
+  const opus55 = resolvePrice('claude-opus-5-5', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(opus55.entry.inputPerMillion, 4)
+  assert.equal(opus55.entry.cacheReadPerMillion, 0.2)
+  assert.equal(opus55.entry.cacheWritePerMillion, 5)
+  assert.equal(opus55.entry.outputPerMillion, 20)
+
+  // Opus 5 的日期快照 id：前缀命中 opus-5（而非 opus-5-5）。
+  assert.equal(matchRuleKey('claude-opus-5-20251122'), 'claude-opus-5')
+  const opus5 = resolvePrice('claude-opus-5', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(opus5.entry.inputPerMillion, 5)
+  assert.equal(opus5.entry.cacheReadPerMillion, 0.5)
+  assert.equal(opus5.entry.cacheWritePerMillion, 6.25)
+  assert.equal(opus5.entry.outputPerMillion, 25)
+
+  const sonnet = resolvePrice('claude-sonnet-5-20260210', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(sonnet.ruleKey, 'claude-sonnet-5')
+  assert.equal(sonnet.entry.inputPerMillion, 2)
+  assert.equal(sonnet.entry.cacheReadPerMillion, 0.2)
+  assert.equal(sonnet.entry.cacheWritePerMillion, 2.5)
+  assert.equal(sonnet.entry.outputPerMillion, 10)
+
+  const haiku = resolvePrice('claude-haiku-4-5', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(haiku.entry.inputPerMillion, 1)
+  assert.equal(haiku.entry.cacheReadPerMillion, 0.1)
+  assert.equal(haiku.entry.cacheWritePerMillion, 1.25)
+  assert.equal(haiku.entry.outputPerMillion, 5)
+
+  // Anthropic 费用公式：sonnet 1M in + 1M write + 1M read + 1M out = 2 + 2.5 + 0.2 + 10。
+  const cost = costOf({ input: 1_000_000, cacheRead: 1_000_000, cacheWrite: 1_000_000, output: 1_000_000 }, sonnet, 7.2)
+  assert.ok(Math.abs(cost.usd - 14.7) < 1e-9)
+})
+
+test('小米 MiMo 官方刊例（国内人民币）+ v2.5 别名 + ultraspeed 顺序', () => {
+  const pro = resolvePrice('mimo-v2.6-pro', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(pro.entry.currency, 'CNY')
+  assert.equal(pro.entry.inputPerMillion, 3)
+  assert.equal(pro.entry.cacheReadPerMillion, 0.025)
+  assert.equal(pro.entry.outputPerMillion, 6)
+  assert.equal(pro.entry.cacheWritePerMillion, undefined) // 限时免费 → 按输入价
+
+  // v2.5 系（2026-10-21 下线）同价，经别名命中。
+  assert.equal(matchRuleKey('mimo-v2.5-pro'), 'mimo-v2.6-pro')
+  assert.equal(matchRuleKey('mimo-v2.5'), 'mimo-v2.6-flash')
+  const legacy = resolvePrice('mimo-v2.5-pro', at('2026-09-01T10:00:00+08:00'))
+  assert.equal(legacy.ruleKey, 'mimo-v2.6-pro')
+  assert.equal(legacy.entry.inputPerMillion, 3)
+
+  // ultraspeed 是 pro 的前缀超集，必须先命中。
+  assert.equal(matchRuleKey('mimo-v2.6-pro-ultraspeed'), 'mimo-v2.6-pro-ultraspeed')
+  const ultra = resolvePrice('mimo-v2.6-pro-ultraspeed', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(ultra.entry.inputPerMillion, 30)
+  assert.equal(ultra.entry.cacheReadPerMillion, 0.25)
+  assert.equal(ultra.entry.outputPerMillion, 60)
+
+  const flash = resolvePrice('mimo-v2.6-flash', at('2026-10-01T10:00:00+08:00'))
+  assert.equal(flash.entry.inputPerMillion, 1)
+  assert.equal(flash.entry.cacheReadPerMillion, 0.02)
+  assert.equal(flash.entry.outputPerMillion, 2)
+})
+
+test('用户覆盖可带 cacheWritePerMillion；目录视图透出', () => {
+  const config = {
+    version: 2,
+    rateUsdCny: DEFAULT_RATE_USD_CNY,
+    models: {
+      'my-openai-model': { currency: 'USD', inputPerMillion: 2, cacheReadPerMillion: 0.2, cacheWritePerMillion: 2.5, outputPerMillion: 10 },
+    },
+  }
+  const priv = resolvePrice('my-openai-model', at('2026-10-01T10:00:00+08:00'), config)
+  assert.equal(priv.entry.cacheWritePerMillion, 2.5)
+  const cost = costOf({ input: 1_000_000, cacheRead: 0, cacheWrite: 2_000_000, output: 0 }, priv, 7.2)
+  assert.ok(Math.abs(cost.usd - 7) < 1e-9) // 2 + 2×2.5
+
+  const catalog = pricingCatalog(config)
+  const privEntry = catalog.find((e) => e.model === 'my-openai-model')
+  assert.equal(privEntry.eras[0].cacheWritePerMillion, 2.5)
+  const astraEntry = catalog.find((e) => e.model === 'gpt-6-astra')
+  assert.equal(astraEntry.eras[0].cacheWritePerMillion, 12.5)
+  const glmEntry = catalog.find((e) => e.model === 'glm-5.3')
+  assert.equal(glmEntry.eras[0].cacheWritePerMillion, undefined)
+})
+
 test('未知模型返回 null；带日期后缀的模型按前缀匹配', () => {
   assert.equal(resolvePrice('gpt-99', at('2026-08-18T10:00:00+08:00')), null)
   assert.equal(resolvePrice('', at('2026-08-18T10:00:00+08:00')), null)

@@ -26,6 +26,8 @@ export interface PriceRuleView {
   currency: 'CNY' | 'USD'
   inputPerMillion: number
   cacheReadPerMillion: number
+  /** undefined = 无独立刊例价，按输入单价计。 */
+  cacheWritePerMillion?: number
   outputPerMillion: number
   /** 价格来源说明（官方公告 / 同基座估算 / 用户覆盖）。 */
   source: string
@@ -148,6 +150,8 @@ export interface PricingCatalogEntry {
     currency: 'CNY' | 'USD'
     inputPerMillion: number
     cacheReadPerMillion: number
+    /** undefined = 无独立刊例价，按输入单价计。 */
+    cacheWritePerMillion?: number
     outputPerMillion: number
     source: string
     estimated: boolean

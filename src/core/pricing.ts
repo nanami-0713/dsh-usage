@@ -11,8 +11,16 @@
  *     官方 API 渠道记 "kimi-k3"，均通过别名/前缀命中同一条规则。
  * - GLM-5.3 系列（bigmodel.cn 官方刊例，不分时）：5.3 = ¥8/¥2/¥28；同基座轻量版
  *     5.3-Flash 约为其 1/10（¥0.8/¥0.23/¥2.8），5.3-FlashX = ¥2/¥0.57/¥7。
+ * - OpenAI（developers.openai.com 官方刊例，美元）：GPT-6 系（astra/sol/luna）
+ *     缓存写为 1.25× 输入价，走独立 cacheWritePerMillion 计费；gpt-5.3-codex /
+ *     gpt-5.2 无独立缓存写价，按输入价。GPT-6 系长上下文（约 2×）未细分，按标准价。
+ * - Anthropic（platform.claude.com 官方刊例，美元）：缓存读 = 0.1× 输入
+ *     （Opus 5.5 例外 = 5%），缓存写 5 分钟档 = 1.25× 输入（1 小时档 2× 未细分）。
+ * - 小米 MiMo（mimo.mi.com 官方刊例，2026-05-27 调价后，人民币）：按国内刊例计费
+ *     （海外另有美元刊例，价格不同）；缓存写限时免费，暂按输入价计（与 GLM 同款约定）。
  *
- * 缓存写入 tokens 没有独立刊例价（DeepSeek/智谱均按未缓存输入计费），按输入单价计费。
+ * 缓存写入 tokens 的独立刊例价（cacheWritePerMillion）仅 OpenAI GPT-6 系与 Anthropic
+ * 存在；未设置的模型沿用历史行为，按输入单价计费。
  * USD ⇄ CNY 按可配置汇率（默认 7.2）折算，不联网请求实时汇率。
  *
  * 本文件是 dsh-token-cost/src/shared.ts 与 dsh-usage-board/src/pricing.ts
@@ -32,6 +40,8 @@ export interface ModelOverride {
   currency: Currency
   inputPerMillion: number
   cacheReadPerMillion: number
+  /** 缓存写单价（每百万 tokens）；缺省按输入单价计（与历史行为一致）。 */
+  cacheWritePerMillion?: number
   outputPerMillion: number
   label?: string
   source?: string
@@ -72,6 +82,8 @@ export interface PriceEntry {
   currency: Currency
   inputPerMillion: number
   cacheReadPerMillion: number
+  /** 缓存写单价；undefined = 供应商无独立刊例价，按输入单价计。 */
+  cacheWritePerMillion?: number
   outputPerMillion: number
   source: string
   estimated: boolean
@@ -118,7 +130,7 @@ function deepseekEras(
   ]
 }
 
-/** 内置计价目录（截至 2026-09 官方公开刊例；取两个前身插件目录的并集）。 */
+/** 内置计价目录（截至 2026-10 官方公开刊例；取两个前身插件目录的并集 + 2026-10 扩容）。 */
 export const MODEL_RULES: ModelRule[] = [
   {
     key: 'deepseek-v4-flash',
@@ -207,6 +219,198 @@ export const MODEL_RULES: ModelRule[] = [
       },
     ],
     note: null,
+  },
+  {
+    // OpenAI：官方刊例见 developers.openai.com/api/docs/pricing（2026-10 快照）。
+    // GPT-6 系缓存写 = 1.25× 输入（独立刊例价）；长上下文档（约 2×）未细分，按标准价。
+    key: 'gpt-6-astra',
+    label: 'GPT-6 Astra',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 10, cacheReadPerMillion: 1, cacheWritePerMillion: 12.5, outputPerMillion: 50, sinceMs: null, peak: null,
+        source: 'OpenAI 官方刊例（GPT-6 Astra：$10 / 缓存读 $1 / 缓存写 $12.50 / $50）',
+        estimated: false,
+      },
+    ],
+    note: '超长上下文输入/输出约 2×，插件按标准短上下文价计',
+  },
+  {
+    key: 'gpt-6.1-sol',
+    label: 'GPT-6.1 Sol',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 2, cacheReadPerMillion: 0.1, cacheWritePerMillion: 2.5, outputPerMillion: 10, sinceMs: null, peak: null,
+        source: 'OpenAI 官方刊例（GPT-6.1 Sol：$2 / 缓存读 $0.10 / 缓存写 $2.50 / $10）',
+        estimated: false,
+      },
+    ],
+    note: '超长上下文输入/输出约 2×，插件按标准短上下文价计',
+  },
+  {
+    key: 'gpt-6-luna',
+    label: 'GPT-6 Luna',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 0.1, cacheReadPerMillion: 0.01, cacheWritePerMillion: 0.125, outputPerMillion: 0.5, sinceMs: null, peak: null,
+        source: 'OpenAI 官方刊例（GPT-6 Luna：$0.10 / 缓存读 $0.01 / 缓存写 $0.125 / $0.50）',
+        estimated: false,
+      },
+    ],
+    note: null,
+  },
+  {
+    key: 'gpt-5.3-codex',
+    label: 'GPT-5.3 Codex',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 1.75, cacheReadPerMillion: 0.175, outputPerMillion: 14, sinceMs: null, peak: null,
+        source: 'OpenAI 官方刊例（Codex 模型：$1.75 / 缓存读 $0.175 / $14）',
+        estimated: false,
+      },
+    ],
+    note: '官方未列独立缓存写价，缓存写按输入价计',
+  },
+  {
+    key: 'gpt-5.2',
+    label: 'GPT-5.2',
+    aliases: ['gpt-5.2-codex'],
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 1.75, cacheReadPerMillion: 0.175, outputPerMillion: 14, sinceMs: null, peak: null,
+        source: 'OpenAI 官方刊例（GPT-5.2 世代；官方定价页已下架，价格经 OpenRouter 等多源核对）',
+        estimated: false,
+      },
+    ],
+    note: '上一代旗舰，收录用于历史日志回溯；Codex 变体（gpt-5.2-codex）同价',
+  },
+  {
+    key: 'chat-latest',
+    label: 'ChatGPT chat-latest',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 5, cacheReadPerMillion: 0.5, outputPerMillion: 30, sinceMs: null, peak: null,
+        source: 'OpenAI 官方刊例（chat-latest：$5 / 缓存读 $0.50 / $30）',
+        estimated: false,
+      },
+    ],
+    note: null,
+  },
+  {
+    // Anthropic：官方刊例见 platform.claude.com/docs/en/about-claude/pricing（2026-10 快照）。
+    // 缓存读 = 0.1× 输入（Opus 5.5 例外 5%）；缓存写取 5 分钟档 1.25× 输入（1 小时档 2× 未细分）。
+    // 目录顺序：claude-opus-5-5 必须排在 claude-opus-5 之前（前缀匹配先到先得）。
+    key: 'claude-fable-5',
+    label: 'Claude Fable 5',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 10, cacheReadPerMillion: 1, cacheWritePerMillion: 12.5, outputPerMillion: 50, sinceMs: null, peak: null,
+        source: 'Anthropic 官方刊例（Claude Fable 5：$10 / 缓存读 $1 / 缓存写 $12.50 / $50）',
+        estimated: false,
+      },
+    ],
+    note: 'Claude 4.6+ 均为 1M 上下文不加价；缓存写按 5 分钟档（1 小时档 2× 未细分）',
+  },
+  {
+    key: 'claude-opus-5-5',
+    label: 'Claude Opus 5.5',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 4, cacheReadPerMillion: 0.2, cacheWritePerMillion: 5, outputPerMillion: 20, sinceMs: null, peak: null,
+        source: 'Anthropic 官方刊例（Claude Opus 5.5：$4 / 缓存读 $0.20（5%）/ 缓存写 $5 / $20）',
+        estimated: false,
+      },
+    ],
+    note: '缓存读为输入价的 5%（其余模型 10%）；须排在 claude-opus-5 之前',
+  },
+  {
+    key: 'claude-opus-5',
+    label: 'Claude Opus 5',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 5, cacheReadPerMillion: 0.5, cacheWritePerMillion: 6.25, outputPerMillion: 25, sinceMs: null, peak: null,
+        source: 'Anthropic 官方刊例（Claude Opus 5：$5 / 缓存读 $0.50 / 缓存写 $6.25 / $25）',
+        estimated: false,
+      },
+    ],
+    note: null,
+  },
+  {
+    key: 'claude-sonnet-5',
+    label: 'Claude Sonnet 5',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 2, cacheReadPerMillion: 0.2, cacheWritePerMillion: 2.5, outputPerMillion: 10, sinceMs: null, peak: null,
+        source: 'Anthropic 官方刊例（Claude Sonnet 5：$2 / 缓存读 $0.20 / 缓存写 $2.50 / $10）',
+        estimated: false,
+      },
+    ],
+    note: 'Sonnet 5.5 同价，带日期后缀的快照 id 由前缀匹配命中',
+  },
+  {
+    key: 'claude-haiku-4-5',
+    label: 'Claude Haiku 4.5',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'USD', inputPerMillion: 1, cacheReadPerMillion: 0.1, cacheWritePerMillion: 1.25, outputPerMillion: 5, sinceMs: null, peak: null,
+        source: 'Anthropic 官方刊例（Claude Haiku 4.5：$1 / 缓存读 $0.10 / 缓存写 $1.25 / $5）',
+        estimated: false,
+      },
+    ],
+    note: null,
+  },
+  {
+    // 小米 MiMo：官方刊例见 mimo.mi.com（2026-05-27 调价后，2026-10 快照）。
+    // 按国内人民币刊例计费（海外另有美元刊例，价格不同）；缓存写限时免费，暂按输入价计。
+    key: 'mimo-v2.6-pro-ultraspeed',
+    label: 'MiMo V2.6 Pro UltraSpeed',
+    peakHours: null,
+    eras: [
+      {
+        currency: 'CNY', inputPerMillion: 30, cacheReadPerMillion: 0.25, outputPerMillion: 60, sinceMs: null, peak: null,
+        source: '小米 MiMo 官方刊例（MiMo-V2.6-Pro-UltraSpeed：输入 ¥30 / 缓存命中 ¥0.25 / 输出 ¥60）',
+        estimated: false,
+      },
+    ],
+    note: '须排在 mimo-v2.6-pro 之前（前缀匹配先到先得）',
+  },
+  {
+    key: 'mimo-v2.6-pro',
+    label: 'MiMo V2.6 Pro',
+    aliases: ['mimo-v2.5-pro'],
+    peakHours: null,
+    eras: [
+      {
+        currency: 'CNY', inputPerMillion: 3, cacheReadPerMillion: 0.025, outputPerMillion: 6, sinceMs: null, peak: null,
+        source: '小米 MiMo 官方刊例（MiMo-V2.6-Pro：输入 ¥3 / 缓存命中 ¥0.025 / 输出 ¥6）',
+        estimated: false,
+      },
+    ],
+    note: 'mimo-v2.5-pro（2026-10-21 下线）同价，经别名命中；缓存写限时免费，暂按输入价计',
+  },
+  {
+    key: 'mimo-v2.6-flash',
+    label: 'MiMo V2.6 Flash',
+    aliases: ['mimo-v2.5'],
+    peakHours: null,
+    eras: [
+      {
+        currency: 'CNY', inputPerMillion: 1, cacheReadPerMillion: 0.02, outputPerMillion: 2, sinceMs: null, peak: null,
+        source: '小米 MiMo 官方刊例（MiMo-V2.6-Flash：输入 ¥1 / 缓存命中 ¥0.02 / 输出 ¥2）',
+        estimated: false,
+      },
+    ],
+    note: 'mimo-v2.5（2026-10-21 下线）同价，经别名命中；缓存写限时免费，暂按输入价计',
   },
 ]
 
@@ -317,6 +521,7 @@ export function resolvePrice(
         currency: override.currency,
         inputPerMillion: override.inputPerMillion,
         cacheReadPerMillion: override.cacheReadPerMillion,
+        cacheWritePerMillion: override.cacheWritePerMillion,
         outputPerMillion: override.outputPerMillion,
         source: override.source ?? '用户覆盖（config.json）',
         estimated: override.estimated ?? false,
@@ -357,9 +562,11 @@ export function costOf(
   price: ResolvedPrice,
   rateUsdCny: number = DEFAULT_RATE_USD_CNY,
 ): { cny: number; usd: number } {
+  const cacheWritePerMillion = price.entry.cacheWritePerMillion ?? price.entry.inputPerMillion
   const native =
-    ((usage.input + usage.cacheWrite) * price.entry.inputPerMillion +
+    (usage.input * price.entry.inputPerMillion +
       usage.cacheRead * price.entry.cacheReadPerMillion +
+      usage.cacheWrite * cacheWritePerMillion +
       usage.output * price.entry.outputPerMillion) /
     1_000_000
   return price.entry.currency === 'CNY'
@@ -375,6 +582,8 @@ export interface PricingCatalogEraView {
   currency: Currency
   inputPerMillion: number
   cacheReadPerMillion: number
+  /** undefined = 无独立刊例价，按输入单价计。 */
+  cacheWritePerMillion?: number
   outputPerMillion: number
   source: string
   estimated: boolean
@@ -413,6 +622,7 @@ export function pricingCatalog(config: UsageConfig): PricingCatalogEntry[] {
       currency: e.currency,
       inputPerMillion: e.inputPerMillion,
       cacheReadPerMillion: e.cacheReadPerMillion,
+      ...(e.cacheWritePerMillion === undefined ? {} : { cacheWritePerMillion: e.cacheWritePerMillion }),
       outputPerMillion: e.outputPerMillion,
       source: e.source,
       estimated: e.estimated,
@@ -430,6 +640,7 @@ export function pricingCatalog(config: UsageConfig): PricingCatalogEntry[] {
         since: null, peak: null, currency: o.currency,
         inputPerMillion: o.inputPerMillion,
         cacheReadPerMillion: o.cacheReadPerMillion,
+        ...(o.cacheWritePerMillion === undefined ? {} : { cacheWritePerMillion: o.cacheWritePerMillion }),
         outputPerMillion: o.outputPerMillion,
         source: o.source ?? '用户覆盖（config.json）',
         estimated: o.estimated ?? false,
@@ -592,7 +803,10 @@ export function formatPriceLine(price: ResolvedPrice, exchangeRate = DEFAULT_RAT
   const toCny = (v: number) => (entry.currency === 'CNY' ? v : v * exchangeRate)
   const fmt = (v: number) => toCny(v).toFixed(toCny(v) < 1 ? 2 : 1)
   const native = (v: number) => `${entry.currency === 'CNY' ? '¥' : '$'}${v.toFixed(v < 1 ? 2 : 1)}`
-  return `未缓存输入 ${native(entry.inputPerMillion)} ≈¥${fmt(entry.inputPerMillion)}/M · 缓存读取 ≈¥${fmt(entry.cacheReadPerMillion)}/M · 输出 ≈¥${fmt(entry.outputPerMillion)}/M`
+  const cacheWrite = entry.cacheWritePerMillion !== undefined && entry.cacheWritePerMillion !== entry.inputPerMillion
+    ? ` · 缓存写 ≈¥${fmt(entry.cacheWritePerMillion)}/M（${native(entry.cacheWritePerMillion)}）`
+    : ''
+  return `未缓存输入 ${native(entry.inputPerMillion)} ≈¥${fmt(entry.inputPerMillion)}/M · 缓存读取 ≈¥${fmt(entry.cacheReadPerMillion)}/M${cacheWrite} · 输出 ≈¥${fmt(entry.outputPerMillion)}/M`
 }
 
 export function formatTokens(n: number): string {

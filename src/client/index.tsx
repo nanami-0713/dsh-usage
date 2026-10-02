@@ -8,8 +8,7 @@
  */
 import type { ConnectionHandle, SessionId } from '@deepseek-ai/dsh-client-connection/client'
 import { PLUGIN_ID } from '../core/pricing'
-import { BOARD_CSS } from './board-widgets'
-import { UsageBoardSection } from './board-page'
+import { BOARD_CSS, UsageBoardSection } from './board-page'
 import { QuotaBadge, QUOTA_BADGE_CSS, createFetchQuota, type ModelSelectionInfo } from './quota-badge'
 import { createFetchUsage, SessionBadge, SESSION_BADGE_CSS, type DirectoryStore } from './session-badge'
 import { DEFAULT_REFRESH_MS } from '../quota/shared'

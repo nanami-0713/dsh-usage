@@ -27,7 +27,8 @@ import type {
 /** PriceRuleView 的聚合 key（label+单价完全一致视为同一条）。 */
 function ruleViewKey(view: Omit<PriceRuleView, 'requests'>): string {
   return [
-    view.label, view.currency, view.inputPerMillion, view.cacheReadPerMillion, view.outputPerMillion,
+    view.label, view.currency, view.inputPerMillion, view.cacheReadPerMillion,
+    view.cacheWritePerMillion ?? '', view.outputPerMillion,
     view.source, view.estimated, view.since, view.peak,
   ].join('|')
 }
@@ -193,6 +194,7 @@ export function buildSummary(cache: IndexCacheFile, options: BuildSummaryOptions
           currency: price.entry.currency,
           inputPerMillion: price.entry.inputPerMillion,
           cacheReadPerMillion: price.entry.cacheReadPerMillion,
+          ...(price.entry.cacheWritePerMillion === undefined ? {} : { cacheWritePerMillion: price.entry.cacheWritePerMillion }),
           outputPerMillion: price.entry.outputPerMillion,
           source: price.entry.source,
           estimated: price.entry.estimated,
